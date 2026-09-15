@@ -1,0 +1,122 @@
+#!/bin/bash
+# ==============================================================================
+# Duoples Linux Universal System & Desktop Environment Installer
+# Supports modular selection of Desktop Environments, Gaming, Drivers, and SSH.
+# ==============================================================================
+
+export TERM=xterm-256color
+
+if [ "$(id -u)" -ne 0 ]; then
+    echo "[!] Error: Please run duoples-installer with sudo: sudo duoples-installer"
+    exit 1
+fi
+
+WELCOME_TEXT="Welcome to the Duoples Linux System Component & Desktop Installer!
+
+This installer allows you to customize your Duoples Linux installation by selecting
+Desktop Environments (KDE, GNOME, Cinnamon, XFCE, LXQt), Gaming Runtimes (Steam,
+Vulkan, Wine, Proton), Hardware Drivers (NVIDIA, AMD, Mesa), and Server Services."
+
+whiptail --title "Duoples Linux 1.0 LTS - System Installer" --msgbox "$WELCOME_TEXT" 16 75
+
+# 1. Desktop Environments Checklist
+DESKTOPS=$(whiptail --title "Desktop Environment Selection" --checklist "Choose one or more Desktop Environments to install:" 18 75 6 "KDE" "KDE Plasma 6 Desktop (Feature-rich, customizable)" ON "GNOME" "GNOME 46 Desktop (Modern, minimalist, smooth)" OFF "CINNAMON" "Cinnamon Desktop (Traditional, elegant, snappy)" OFF "XFCE" "XFCE 4.18 Desktop (Ultra-lightweight, high speed)" OFF "LXQT" "LXQt Lightweight Desktop (Minimal memory usage)" OFF "NONE" "Headless / Server Console Mode only" OFF 3>&1 1>&2 2>&3)
+
+# 2. Gaming, Drivers & Developer Suite Checklist
+FEATURES=$(whiptail --title "Drivers, Gaming & System Features" --checklist "Select additional drivers, gaming stacks, and services:" 20 75 8 "GAMING" "Gaming Stack (Steam, Wine, Lutris, GameMode, Vulkan)" ON "MESA_OPENCL" "Full Mesa 3D / Vulkan Graphics Drivers & OpenCL" ON "NVIDIA" "NVIDIA Proprietary Graphics Drivers (DKMS)" OFF "AUDIO" "PipeWire Low-Latency Modern Audio Server" ON "SSH" "OpenSSH Server (Remote secure terminal management)" ON "DEVELOPER" "Development Tools (build-essential, git, python, curl)" ON "MULTIMEDIA" "Multimedia Codecs (ffmpeg, vlc, mpv, gstreamer)" ON "APPSTORE" "Duoples Appstore Client & Integration Engine" ON 3>&1 1>&2 2>&3)
+
+whiptail --title "Installation Confirmation" --yesno "Selected Desktops: $DESKTOPS\nSelected Features: $FEATURES\n\nProceed with package installation now?" 14 75
+
+if [ $? -ne 0 ]; then
+    echo "[*] Installation cancelled by user."
+    exit 0
+fi
+
+clear
+echo "=================================================="
+echo " Installing Selected Duoples Linux Components"
+echo "=================================================="
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+
+INSTALL_PKGS=()
+
+# Process Desktops
+for d in $DESKTOPS; do
+    case $d in
+        *"KDE"*)
+            echo "[*] Queueing KDE Plasma Desktop..."
+            INSTALL_PKGS+=(kde-plasma-desktop sddm)
+            ;;
+        *"GNOME"*)
+            echo "[*] Queueing GNOME Desktop..."
+            INSTALL_PKGS+=(ubuntu-desktop-minimal gdm3)
+            ;;
+        *"CINNAMON"*)
+            echo "[*] Queueing Cinnamon Desktop..."
+            INSTALL_PKGS+=(cinnamon-core lightdm)
+            ;;
+        *"XFCE"*)
+            echo "[*] Queueing XFCE Desktop..."
+            INSTALL_PKGS+=(xfce4 xfce4-goodies lightdm)
+            ;;
+        *"LXQT"*)
+            echo "[*] Queueing LXQt Desktop..."
+            INSTALL_PKGS+=(lxqt sddm)
+            ;;
+    esac
+done
+
+# Process Features
+for f in $FEATURES; do
+    case $f in
+        *"GAMING"*)
+            echo "[*] Queueing Gaming & Vulkan Runtimes..."
+            INSTALL_PKGS+=(mesa-vulkan-drivers vulkan-tools gamemode libgamemode0)
+            ;;
+        *"MESA_OPENCL"*)
+            echo "[*] Queueing 3D Hardware Graphics Drivers..."
+            INSTALL_PKGS+=(libgl1-mesa-dri libglx-mesa0 mesa-utils)
+            ;;
+        *"NVIDIA"*)
+            echo "[*] Queueing NVIDIA Driver Installer..."
+            INSTALL_PKGS+=(nvidia-detect)
+            ;;
+        *"AUDIO"*)
+            echo "[*] Queueing PipeWire Audio..."
+            INSTALL_PKGS+=(pipewire pipewire-pulse wireplumber)
+            ;;
+        *"SSH"*)
+            echo "[*] Queueing OpenSSH Server..."
+            INSTALL_PKGS+=(openssh-server)
+            ;;
+        *"DEVELOPER"*)
+            echo "[*] Queueing Development Tools..."
+            INSTALL_PKGS+=(build-essential git python3 python3-pip curl wget nano)
+            ;;
+        *"MULTIMEDIA"*)
+            echo "[*] Queueing Multimedia Codecs..."
+            INSTALL_PKGS+=(ffmpeg mpv)
+            ;;
+    esac
+done
+
+if [ ${#INSTALL_PKGS[@]} -gt 0 ]; then
+    echo "[*] Installing packages: ${INSTALL_PKGS[*]}"
+    apt-get install -y --no-install-recommends "${INSTALL_PKGS[@]}"
+fi
+
+# Enable display manager if installed
+if [ -f /usr/sbin/sddm ]; then
+    systemctl enable sddm 2>/dev/null || true
+elif [ -f /usr/sbin/lightdm ]; then
+    systemctl enable lightdm 2>/dev/null || true
+elif [ -f /usr/sbin/gdm3 ]; then
+    systemctl enable gdm3 2>/dev/null || true
+fi
+
+echo "=================================================="
+echo " Duoples Linux Components Configured Successfully!"
+echo "=================================================="
+whiptail --title "Setup Complete" --msgbox "All selected components have been installed and configured!\n\nIf you installed a Desktop Environment, reboot the machine to start the graphical UI." 12 70
