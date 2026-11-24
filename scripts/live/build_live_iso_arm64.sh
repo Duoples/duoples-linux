@@ -28,7 +28,7 @@ mkdir -p "${ISO_DIR}/live" "${ISO_DIR}/boot/grub" "${OUT_DIR}"
 echo "[*] Building compressed SquashFS filesystem..."
 rm -f "${ISO_DIR}/live/filesystem.squashfs"
 mksquashfs "${ROOTFS_DIR}" "${ISO_DIR}/live/filesystem.squashfs" \
-    -comp xz -b 1048576 -Xdict-size 100% -noappend -processors 4 \
+    -comp gzip -Xcompression-level 6 -b 1048576 -noappend -processors 4 \
     -e dev proc sys run tmp var/tmp var/cache/apt var/lib/apt/lists mnt media lost+found
 
 # 2. Copy Linux kernel
@@ -80,9 +80,15 @@ menuentry "Duoples Linux 1.1 LTS (ARM64 Live)" {
     initrd /live/initrd.img
 }
 
-menuentry "Duoples Linux 1.1 LTS (ARM64 Safe Graphics)" {
+menuentry "Install Duoples Linux on this computer" {
     search --file --set=root /live/vmlinuz
-    linux /live/vmlinuz nomodeset console=tty0 console=ttyAMA0
+    linux /live/vmlinuz console=tty0 console=ttyAMA0 duoples.installer=1
+    initrd /live/initrd.img
+}
+
+menuentry "Duoples Linux 1.1 LTS (ARM64 Console)" {
+    search --file --set=root /live/vmlinuz
+    linux /live/vmlinuz console=tty0 console=ttyAMA0 systemd.unit=multi-user.target
     initrd /live/initrd.img
 }
 GRUB

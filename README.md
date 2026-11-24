@@ -88,8 +88,8 @@ Royal Crest wallpaper, an XFCE desktop, and LightDM autologin as `duoples`.
 
 **Requirements (ARM64 build host):**
 - Ubuntu 24.04+ rootfs at `$ROOTFS_DIR` with `xorg xfce4 lightdm lightdm-gtk-greeter network-manager`
-- Linux 6.6 kernel with `CONFIG_SQUASHFS=y`, `CONFIG_SQUASHFS_XZ=y`, `CONFIG_OVERLAY_FS=y`,
-  and VirtIO GPU/block drivers built in
+- Linux 6.6 kernel with `CONFIG_SQUASHFS=y`, `CONFIG_SQUASHFS_ZLIB=y`, `CONFIG_OVERLAY_FS=y`,
+  and VirtIO GPU/block drivers built in (`SQUASHFS_XZ`/`SQUASHFS_ZSTD` optional for smaller images)
 - `mksquashfs xorriso grub-mkstandalone mtools cpio gzip`
 
 **Build:**
@@ -104,6 +104,28 @@ The branding asset lives at `branding/duoples-wallpaper.png`.
 
 **Boot flow:** GRUB (EFI) → kernel → live initramfs → SquashFS + tmpfs overlay →
 systemd → LightDM (autologin `duoples`) → XFCE.
+
+### Installing to disk
+
+On the live desktop, launch **Install Duoples Linux** (desktop icon or
+Applications menu). Select the target disk, type `ERASE` to confirm, optionally
+set the `duoples` password, then reboot and remove the ISO.
+
+The installer creates a GPT layout with a 512 MB EFI partition and an ext4 root,
+copies the SquashFS, writes `/etc/fstab` by UUID, and installs GRUB for
+`arm64-efi` in removable mode. The installed system boots the same kernel
+directly (`root=UUID=...`); ext4, VirtIO block and VirtIO GPU are built in, so no
+initramfs is required.
+
+### Display and full screen
+
+- **Full screen:** UTM menu **View → Enter Full Screen** (or the green window button).
+- **Dynamic resolution:** `spice-vdagent` is included and enabled, so resizing
+  the UTM window also resizes the guest desktop.
+- **Console entry:** the former "Safe Graphics" menu used `nomodeset`, which
+  disables the VirtIO GPU and leaves UTM showing "Display output is not active".
+  It has been replaced by a **Console** entry that boots to a text console with
+  the GPU still active.
 
 **UTM settings:** QEMU backend, aarch64, UEFI boot, 4 GB RAM, VirtIO CD with the ISO,
 and a VirtIO display (`virtio-ramfb` or `virtio-gpu-pci`).
