@@ -19,7 +19,7 @@ Download ready-to-run images directly from **[GitHub Releases v1.1.0](https://gi
 
 | Artifact | Arch | Format | Target Platform |
 | :--- | :--- | :--- | :--- |
-| **`duoples-linux-1.1-arm64.iso`** | `arm64` | Bootable Live ISO (212 MB) | Apple Silicon (UTM), Raspberry Pi 4/5, ARM64 Hypervisors |
+| **`duoples-linux-1.1-arm64.iso`** | `arm64` | Bootable Live ISO (210 MB) | Apple Silicon (UTM), Raspberry Pi 4/5, ARM64 Hypervisors |
 | **`duoples-linux-1.1-amd64.iso`** | `x86_64` | Bootable Live ISO (16 MB) | Bare-metal Intel/AMD PCs, VirtualBox, VMware, Proxmox |
 | **`duoples-linux-rootfs-arm64.tar.gz`** | `arm64` | Rootfs Tarball (216 MB) | Docker, Podman, LXD, LXC, WSL2, Proxmox Templates |
 | **`bzImage-x86_64`** | `x86_64` | Linux 6.6 Kernel (13 MB) | Direct Kernel Boot, QEMU, MicroVMs, Firecracker |
@@ -83,6 +83,8 @@ Insert the USB drive into your PC, boot into BIOS/Boot Menu (F12 / Del / F8), an
 
 The `scripts/live/` pipeline builds a UEFI-bootable live ISO with the Duoples
 Royal Crest wallpaper, an XFCE desktop, and LightDM autologin as `duoples`.
+
+![Duoples Linux ARM64 live desktop](docs/duoples-linux-desktop.png)
 
 **Requirements (ARM64 build host):**
 - Ubuntu 24.04+ rootfs at `$ROOTFS_DIR` with `xorg xfce4 lightdm lightdm-gtk-greeter network-manager`
