@@ -4,7 +4,7 @@
 
 OUT_DIR = out
 
-.PHONY: all full full-arm64 full-amd64 test clean
+.PHONY: all full full-arm64 full-amd64 live-iso-arm64 test clean
 
 all: full-arm64
 
@@ -13,6 +13,10 @@ full: full-arm64
 full-arm64:
 	@echo '[*] Building Duoples Linux (ARM64)...'
 	@bash ./build_duoples_linux.sh arm64
+
+live-iso-arm64:
+	@echo '[*] Building graphical ARM64 live ISO...'
+	@bash ./scripts/live/build_live_iso_arm64.sh
 
 full-amd64:
 	@echo '[*] Building Duoples Linux (AMD64 / x86_64) via Rosetta 2...'

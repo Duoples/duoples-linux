@@ -79,6 +79,35 @@ Insert the USB drive into your PC, boot into BIOS/Boot Menu (F12 / Del / F8), an
 
 ---
 
+## 💿 Graphical ARM64 Live ISO (UTM / QEMU)
+
+The `scripts/live/` pipeline builds a UEFI-bootable live ISO with the Duoples
+Royal Crest wallpaper, an XFCE desktop, and LightDM autologin as `duoples`.
+
+**Requirements (ARM64 build host):**
+- Ubuntu 24.04+ rootfs at `$ROOTFS_DIR` with `xorg xfce4 lightdm lightdm-gtk-greeter network-manager`
+- Linux 6.6 kernel with `CONFIG_SQUASHFS=y`, `CONFIG_SQUASHFS_XZ=y`, `CONFIG_OVERLAY_FS=y`,
+  and VirtIO GPU/block drivers built in
+- `mksquashfs xorriso grub-mkstandalone mtools cpio gzip`
+
+**Build:**
+```bash
+export ROOTFS_DIR=/path/to/full_rootfs
+sudo bash scripts/live/prepare_live_rootfs.sh
+sudo bash scripts/live/build_live_iso_arm64.sh
+```
+
+Output: `out/duoples-linux-1.1-arm64.iso` (the SHA256 is printed at the end).
+The branding asset lives at `branding/duoples-wallpaper.png`.
+
+**Boot flow:** GRUB (EFI) → kernel → live initramfs → SquashFS + tmpfs overlay →
+systemd → LightDM (autologin `duoples`) → XFCE.
+
+**UTM settings:** QEMU backend, aarch64, UEFI boot, 4 GB RAM, VirtIO CD with the ISO,
+and a VirtIO display (`virtio-ramfb` or `virtio-gpu-pci`).
+
+---
+
 ## 🛠️ Modular System & Desktop Installer (`duoples-installer`)
 
 Once booted, launch the built-in curses checklist installer:
